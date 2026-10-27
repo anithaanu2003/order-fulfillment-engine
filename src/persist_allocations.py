@@ -2,7 +2,11 @@
 import sqlite3
 
 from . import init_db
-from .id_generator import generate_shipment_id, generate_promise_id
+from .id_generator import (
+    generate_shipment_id,
+    generate_promise_id,
+    generate_tracking_event_id,
+)
 from .select_carrier_service import select_carrier_service
 from .calculate_delivery_promise import calculate_delivery_dates
 
@@ -142,6 +146,27 @@ def persist_order_allocation(order, allocations):
                         carrier_service["carrier_id"],
                         carrier_service["service_level_id"],
                         now,
+                    ),
+                )
+                connection.execute(
+                    """
+                    INSERT INTO tracking_events (
+                        tracking_event_id,
+                        shipment_id,
+                        event_sequence,
+                        event_type,
+                        event_timestamp,
+                        event_location,
+                        event_notes
+                    )
+                    VALUES (?, ?, 1, 'CREATED', ?, ?, ?)
+                    """,
+                    (
+                        generate_tracking_event_id(shipment_id, 1),
+                        shipment_id,
+                        now,
+                        node_id,
+                        "Shipment created during order allocation",
                     ),
                 )
 

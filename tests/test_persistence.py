@@ -221,6 +221,35 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             "SELECT COUNT(*) FROM shipments WHERE order_id = ?",
             ("ORD-2026-000001",),
         ).fetchone()[0]
+        tracking_event_count = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM tracking_events
+            WHERE shipment_id IN (
+                SELECT shipment_id
+                FROM shipments
+                WHERE order_id = ?
+            )
+            """,
+            ("ORD-2026-000001",),
+        ).fetchone()[0]
+        tracking_event = connection.execute(
+            """
+            SELECT
+                tracking_event_id,
+                event_sequence,
+                event_type,
+                event_timestamp,
+                event_location
+            FROM tracking_events
+            WHERE shipment_id IN (
+                SELECT shipment_id
+                FROM shipments
+                WHERE order_id = ?
+            )
+            """,
+            ("ORD-2026-000001",),
+        ).fetchone()
 
         promise_count = connection.execute(
             "SELECT COUNT(*) FROM delivery_promises WHERE order_id = ?",
@@ -248,6 +277,12 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
     # Verify that all expected changes were saved.
     assert status == "ALLOCATED"
     assert shipment_count == 1
+    assert tracking_event_count == 1
+    assert tracking_event[0] == "TRK-SHP-2026-000001-001"
+    assert tracking_event[1] == 1
+    assert tracking_event[2] == "CREATED"
+    assert tracking_event[3] == "2026-10-26T12:00:00"
+    assert tracking_event[4] == "FUL-2026-000001"
     assert promise_count == 1
     assert reserved_quantity == 1
     assert capacity_usage == (1, 1)
