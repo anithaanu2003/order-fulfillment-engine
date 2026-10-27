@@ -512,6 +512,84 @@ def test_delivery_event_records_delivery_timestamp(tmp_path, monkeypatch):
         ).fetchone()
 
     assert row == ("DELIVERED", dispatch_time, delivery_time)
+    
+
+def test_cannot_deliver_before_dispatch_timestamp(tmp_path, monkeypatch):
+    database_file = tmp_path / "test_delivery_before_dispatch_time.db"
+    create_test_database(database_file, monkeypatch)
+
+    with sqlite3.connect(database_file) as connection:
+        connection.execute(
+            """
+            INSERT INTO skus (
+                sku_id, sku_name, category, unit_weight_kg, is_active
+            )
+            VALUES ('SKU-000001', 'Laptop', 'Electronics', 1.8, 1)
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO fulfillment_nodes (
+                node_id, node_name, city, service_zone, is_active
+            )
+            VALUES (
+                'FUL-2026-000001', 'Hyderabad Warehouse',
+                'Hyderabad', 'SOUTH', 1
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO carriers (
+                carrier_id, carrier_name, is_active
+            )
+            VALUES ('CAR-000001', 'FastShip', 1)
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO service_levels (
+                service_level_id, service_name, transit_days,
+                cutoff_time, is_active
+            )
+            VALUES ('SVC-000001', 'STANDARD', 3, '17:00', 1)
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO shipments (
+                shipment_id, order_id, node_id, carrier_id,
+                service_level_id, shipment_status, created_at
+            )
+            VALUES (
+                'SHP-2026-000001', 'ORD-2026-000001',
+                'FUL-2026-000001', 'CAR-000001',
+                'SVC-000001', 'CREATED', '2026-10-26T12:00:00'
+            )
+            """
+        )
+
+    record_tracking_event(
+        shipment_id="SHP-2026-000001",
+        event_type="DISPATCHED",
+        event_timestamp="2026-10-26T15:00:00",
+        event_location="Hyderabad Warehouse",
+    )
+
+    import pytest
+
+    with pytest.raises(ValueError, match="Delivery timestamp cannot be earlier than dispatch"):
+        record_tracking_event(
+            shipment_id="SHP-2026-000001",
+            event_type="DELIVERED",
+            event_timestamp="2026-10-26T13:00:00",
+            event_location="Customer Address",
+        )
+
 
 
 
