@@ -1,34 +1,72 @@
 
 from pathlib import Path
+import random
 import sqlite3
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATABASE_FILE = PROJECT_ROOT / "data" / "fulfillment.db"
 
+SEED = 20261022
+STOCK_TIMESTAMP = "2026-10-26T12:00:00"
+
+INITIAL_STOCK = [
+    (10, 2), (50, 5), (30, 3), (8, 1), (40, 4),
+    (5, 1), (25, 2), (20, 2), (12, 2), (15, 1),
+    (3, 0), (35, 3), (15, 1), (6, 0), (20, 2),
+]
+
+
+def generate_inventory_records(nodes, skus):
+    rng = random.Random(SEED)
+    inventory_records = []
+    sequence = 1
+
+    for node_index, (node_id,) in enumerate(nodes):
+        for sku_index, (sku_id,) in enumerate(skus):
+            if node_index < 3:
+                available, reserved = INITIAL_STOCK[
+                    node_index * len(skus) + sku_index
+                ]
+            else:
+                available = rng.randint(10, 100)
+                reserved = rng.randint(0, min(available // 4, 10))
+
+            inventory_records.append(
+                (
+                    f"INV-{sequence:06d}",
+                    node_id,
+                    sku_id,
+                    available,
+                    reserved,
+                    STOCK_TIMESTAMP,
+                )
+            )
+            sequence += 1
+
+    return inventory_records
+
 
 def seed_inventory():
-    inventory_records = [
-        ("INV-000001", "FUL-2026-000001", "SKU-000001", 10, 2),
-        ("INV-000002", "FUL-2026-000001", "SKU-000002", 50, 5),
-        ("INV-000003", "FUL-2026-000001", "SKU-000003", 30, 3),
-        ("INV-000004", "FUL-2026-000001", "SKU-000004", 8, 1),
-        ("INV-000005", "FUL-2026-000001", "SKU-000005", 40, 4),
-
-        ("INV-000006", "FUL-2026-000002", "SKU-000001", 5, 1),
-        ("INV-000007", "FUL-2026-000002", "SKU-000002", 25, 2),
-        ("INV-000008", "FUL-2026-000002", "SKU-000003", 20, 2),
-        ("INV-000009", "FUL-2026-000002", "SKU-000004", 12, 2),
-        ("INV-000010", "FUL-2026-000002", "SKU-000005", 15, 1),
-
-        ("INV-000011", "FUL-2026-000003", "SKU-000001", 3, 0),
-        ("INV-000012", "FUL-2026-000003", "SKU-000002", 35, 3),
-        ("INV-000013", "FUL-2026-000003", "SKU-000003", 15, 1),
-        ("INV-000014", "FUL-2026-000003", "SKU-000004", 6, 0),
-        ("INV-000015", "FUL-2026-000003", "SKU-000005", 20, 2),
-    ]
-
     with sqlite3.connect(DATABASE_FILE) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
+
+        nodes = connection.execute(
+            "SELECT node_id FROM fulfillment_nodes ORDER BY node_id"
+        ).fetchall()
+
+        skus = connection.execute(
+            "SELECT sku_id FROM skus ORDER BY sku_id"
+        ).fetchall()
+
+        if len(nodes) != 20:
+            raise ValueError(
+                f"Expected 20 fulfillment nodes, found {len(nodes)}."
+            )
+
+        if not skus:
+            raise ValueError("No SKUs found. Seed master data first.")
+
+        inventory_records = generate_inventory_records(nodes, skus)
 
         connection.executemany(
             """
@@ -42,35 +80,20 @@ def seed_inventory():
             )
             VALUES (?, ?, ?, ?, ?, ?)
             """,
-            [
-                (*record, "2026-10-26T12:00:00")
-                for record in inventory_records
-            ],
+            inventory_records,
         )
 
-        rows = connection.execute(
-            """
-            SELECT
-                n.node_name,
-                s.sku_name,
-                i.available_quantity,
-                i.reserved_quantity,
-                i.available_quantity - i.reserved_quantity
-                    AS unreserved_quantity
-            FROM inventory AS i
-            JOIN fulfillment_nodes AS n
-                ON i.node_id = n.node_id
-            JOIN skus AS s
-                ON i.sku_id = s.sku_id
-            ORDER BY n.node_name, s.sku_name
-            """
-        ).fetchall()
+        total = connection.execute(
+            "SELECT COUNT(*) FROM inventory"
+        ).fetchone()[0]
 
-    print(f"Inventory records found: {len(rows)}")
-    print("\nWarehouse inventory:")
+        node_count = connection.execute(
+            "SELECT COUNT(DISTINCT node_id) FROM inventory"
+        ).fetchone()[0]
 
-    for row in rows:
-        print(row)
+        print(f"Inventory records in database: {total}")
+        print(f"Warehouses represented: {node_count}")
+        print(f"Records generated this run: {len(inventory_records)}")
 
 
 if __name__ == "__main__":

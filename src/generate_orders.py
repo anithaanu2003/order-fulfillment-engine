@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from .id_generator import generate_order_id
 SEED = 20261022
 SAMPLE_ORDER_COUNT = 5
+FULL_DATASET_ORDER_COUNT = 50_000
 
 CITIES = [
     ("Hyderabad", "SOUTH"),
@@ -69,6 +70,14 @@ def save_orders_to_database(orders):
 
     return len(orders)
 
+def get_order_count():
+    with sqlite3.connect(DATABASE_FILE) as connection:
+        row = connection.execute(
+            "SELECT COUNT(*) FROM orders"
+        ).fetchone()
+
+    return row[0]
+
 def get_next_order_number():
     with sqlite3.connect(DATABASE_FILE) as connection:
         row = connection.execute(
@@ -82,14 +91,29 @@ def get_next_order_number():
     return (row[0] or 0) + 1
 
 
+
 if __name__ == "__main__":
-    start_sequence = get_next_order_number()
-    generated_orders = generate_orders(
-        start_sequence=start_sequence
-    )
-    saved_count = save_orders_to_database(generated_orders)
+    existing_count = get_order_count()
 
-    print(f"Successfully saved {saved_count} orders to the database.")
+    remaining_count = FULL_DATASET_ORDER_COUNT - existing_count
 
-    for order in generated_orders:
-        print(order)
+    if remaining_count <= 0:
+        print(
+            f"Target already reached: {existing_count} orders."
+        )
+    else:
+        start_sequence = get_next_order_number()
+
+        generated_orders = generate_orders(
+            count=remaining_count,
+            start_sequence=start_sequence,
+        )
+
+        saved_count = save_orders_to_database(generated_orders)
+
+        print(f"Orders before generation: {existing_count}")
+        print(f"Orders added: {saved_count}")
+        print(
+            f"Target order count: "
+            f"{existing_count + saved_count}"
+        )

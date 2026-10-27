@@ -1,12 +1,12 @@
 
 import sqlite3
 
-from .init_db import DATABASE_FILE
+from . import init_db
 
 
 def get_eligible_carrier_services(destination_zone):
     """Return active carrier services that support the destination zone."""
-    with sqlite3.connect(DATABASE_FILE) as connection:
+    with sqlite3.connect(init_db.DATABASE_FILE) as connection:
         connection.row_factory = sqlite3.Row
 
         rows = connection.execute(

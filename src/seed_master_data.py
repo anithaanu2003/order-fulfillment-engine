@@ -26,7 +26,7 @@ def seed_master_data():
             ],
         )
 
-        # Sample fulfillment nodes
+        # Fulfillment nodes
         connection.executemany(
             """
             INSERT OR IGNORE INTO fulfillment_nodes
@@ -37,10 +37,27 @@ def seed_master_data():
                 ("FUL-2026-000001", "Hyderabad Warehouse", "Hyderabad", "SOUTH"),
                 ("FUL-2026-000002", "Bengaluru Warehouse", "Bengaluru", "SOUTH"),
                 ("FUL-2026-000003", "Chennai Warehouse", "Chennai", "SOUTH"),
+                ("FUL-2026-000004", "Mumbai Warehouse", "Mumbai", "WEST"),
+                ("FUL-2026-000005", "Pune Warehouse", "Pune", "WEST"),
+                ("FUL-2026-000006", "Ahmedabad Warehouse", "Ahmedabad", "WEST"),
+                ("FUL-2026-000007", "Delhi Warehouse", "Delhi", "NORTH"),
+                ("FUL-2026-000008", "Jaipur Warehouse", "Jaipur", "NORTH"),
+                ("FUL-2026-000009", "Lucknow Warehouse", "Lucknow", "NORTH"),
+                ("FUL-2026-000010", "Kolkata Warehouse", "Kolkata", "EAST"),
+                ("FUL-2026-000011", "Bhubaneswar Warehouse", "Bhubaneswar", "EAST"),
+                ("FUL-2026-000012", "Patna Warehouse", "Patna", "EAST"),
+                ("FUL-2026-000013", "Kochi Warehouse", "Kochi", "SOUTH"),
+                ("FUL-2026-000014", "Coimbatore Warehouse", "Coimbatore", "SOUTH"),
+                ("FUL-2026-000015", "Visakhapatnam Warehouse", "Visakhapatnam", "SOUTH"),
+                ("FUL-2026-000016", "Indore Warehouse", "Indore", "CENTRAL"),
+                ("FUL-2026-000017", "Bhopal Warehouse", "Bhopal", "CENTRAL"),
+                ("FUL-2026-000018", "Nagpur Warehouse", "Nagpur", "CENTRAL"),
+                ("FUL-2026-000019", "Guwahati Warehouse", "Guwahati", "NORTHEAST"),
+                ("FUL-2026-000020", "Dehradun Warehouse", "Dehradun", "NORTH"),
             ],
         )
-
-        # Sample carriers
+    
+        # Carriers
         connection.executemany(
             """
             INSERT OR IGNORE INTO carriers
@@ -51,10 +68,15 @@ def seed_master_data():
                 ("CAR-000001", "FastShip"),
                 ("CAR-000002", "Reliable Express"),
                 ("CAR-000003", "National Parcel"),
+                ("CAR-000004", "BlueDart"),
+                ("CAR-000005", "Delhivery"),
+                ("CAR-000006", "DTDC"),
+                ("CAR-000007", "Ecom Express"),
+                ("CAR-000008", "Shadowfax"),
+                ("CAR-000009", "XpressBees"),
+                ("CAR-000010", "India Post Logistics"),
             ],
         )
-
-        print("Master data inserted successfully.")
 
         # Verify row counts
         for table in ("skus", "fulfillment_nodes", "carriers"):

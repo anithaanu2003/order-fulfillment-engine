@@ -16,13 +16,16 @@ def validate_allocations(order, allocations):
     if not isinstance(allocations, list) or not allocations:
         return False
 
-    expected_lines = {
-        line["order_line_id"]: (
-            line["sku_id"],
-            line["quantity"],
-        )
-        for line in order["order_lines"]
-    }
+    try:
+        expected_lines = {
+            line["order_line_id"]: (
+                line["sku_id"],
+                line["quantity"],
+            )
+            for line in order["order_lines"]
+        }
+    except (KeyError, TypeError):
+        return False
 
     actual_lines = {}
 
@@ -49,10 +52,7 @@ def validate_allocations(order, allocations):
         if not isinstance(quantity, int) or isinstance(quantity, bool):
             return False
 
-        if quantity <= 0:
-            return False
-
-        if not allocation["node_id"]:
+        if quantity <= 0 or not allocation["node_id"]:
             return False
 
         actual_lines[line_id] = (
@@ -62,12 +62,14 @@ def validate_allocations(order, allocations):
 
     return actual_lines == expected_lines
 
+
 def persist_order_allocation(order, allocations):
     """
-    Save one order's allocation as shipments, shipment lines,
-    inventory reservations, capacity usage, and a delivery promise.
+    Persist an order allocation atomically.
 
-    All database changes are committed together or rolled back.
+    Returns False when the allocation is invalid, the order is missing
+    or is not CREATED, or no eligible carrier service is available.
+    Database changes are committed together or rolled back.
     """
     if not validate_allocations(order, allocations):
         return False
@@ -76,29 +78,37 @@ def persist_order_allocation(order, allocations):
     order_timestamp = order["order_timestamp"]
     destination_zone = order["destination_zone"]
 
-    carrier_service = select_carrier_service(destination_zone)
-    if carrier_service is None:
-        return False
-
-    delivery_dates = calculate_delivery_dates(
-        order_timestamp,
-        carrier_service["cutoff_time"],
-        carrier_service["transit_days"],
-    )
-
     with sqlite3.connect(init_db.DATABASE_FILE) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
         try:
+            # Check the order before querying carrier services.
             current_status = connection.execute(
-                "SELECT order_status FROM orders WHERE order_id = ?",
+                """
+                SELECT order_status
+                FROM orders
+                WHERE order_id = ?
+                """,
                 (order_id,),
             ).fetchone()
 
             if current_status is None or current_status[0] != "CREATED":
                 return False
 
+            # Select a carrier only for an order that can be allocated.
+            carrier_service = select_carrier_service(destination_zone)
+
+            if carrier_service is None:
+                return False
+
+            delivery_dates = calculate_delivery_dates(
+                order_timestamp,
+                carrier_service["cutoff_time"],
+                carrier_service["transit_days"],
+            )
+
             grouped = {}
+
             for allocation in allocations:
                 node_id = allocation["node_id"]
                 grouped.setdefault(node_id, []).append(allocation)
@@ -134,8 +144,13 @@ def persist_order_allocation(order, allocations):
                 connection.execute(
                     """
                     INSERT INTO shipments (
-                        shipment_id, order_id, node_id, carrier_id,
-                        service_level_id, shipment_status, created_at
+                        shipment_id,
+                        order_id,
+                        node_id,
+                        carrier_id,
+                        service_level_id,
+                        shipment_status,
+                        created_at
                     )
                     VALUES (?, ?, ?, ?, ?, 'CREATED', ?)
                     """,
@@ -148,6 +163,7 @@ def persist_order_allocation(order, allocations):
                         now,
                     ),
                 )
+
                 connection.execute(
                     """
                     INSERT INTO tracking_events (
@@ -174,8 +190,10 @@ def persist_order_allocation(order, allocations):
                     connection.execute(
                         """
                         INSERT INTO shipment_lines (
-                            shipment_line_id, shipment_id,
-                            order_line_id, quantity
+                            shipment_line_id,
+                            shipment_id,
+                            order_line_id,
+                            quantity
                         )
                         VALUES (?, ?, ?, ?)
                         """,
@@ -193,9 +211,13 @@ def persist_order_allocation(order, allocations):
             connection.execute(
                 """
                 INSERT INTO delivery_promises (
-                    promise_id, order_id, promise_version,
-                    promised_delivery_start, promised_delivery_end,
-                    promise_created_at, promise_status
+                    promise_id,
+                    order_id,
+                    promise_version,
+                    promised_delivery_start,
+                    promised_delivery_end,
+                    promise_created_at,
+                    promise_status
                 )
                 VALUES (?, ?, 1, ?, ?, ?, 'ACTIVE')
                 """,
@@ -213,10 +235,11 @@ def persist_order_allocation(order, allocations):
                 UPDATE orders
                 SET order_status = 'ALLOCATED'
                 WHERE order_id = ?
+                  AND order_status = 'CREATED'
                 """,
                 (order_id,),
             )
-            
+
             # Reserve inventory for each allocated order line.
             for allocation in allocations:
                 cursor = connection.execute(
@@ -244,7 +267,6 @@ def persist_order_allocation(order, allocations):
                         f"{allocation['node_id']}"
                     )
 
-            
             # Record warehouse capacity used by each shipment node.
             for node_id, node_allocations in grouped.items():
                 requested_lines = len(node_allocations)
