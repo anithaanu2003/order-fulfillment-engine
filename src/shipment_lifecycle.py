@@ -123,13 +123,34 @@ def record_tracking_event(
                 event_notes,
             ),
         )
-        connection.execute(
-            """
-            UPDATE shipments
-            SET shipment_status = ?
-            WHERE shipment_id = ?
-            """,
-            (event_type, shipment_id),
-        )
+        if event_type == "DISPATCHED":
+            connection.execute(
+                """
+                UPDATE shipments
+                SET shipment_status = ?,
+                    dispatched_at = ?
+                WHERE shipment_id = ?
+                """,
+                (event_type, event_timestamp, shipment_id),
+            )
+        elif event_type == "DELIVERED":
+            connection.execute(
+                """
+                UPDATE shipments
+                SET shipment_status = ?,
+                    delivered_at = ?
+                WHERE shipment_id = ?
+                """,
+                (event_type, event_timestamp, shipment_id),
+            )
+        else:
+            connection.execute(
+                """
+                UPDATE shipments
+                SET shipment_status = ?
+                WHERE shipment_id = ?
+                """,
+                (event_type, shipment_id),
+            )
 
     return event_id
