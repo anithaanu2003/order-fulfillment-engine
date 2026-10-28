@@ -1,0 +1,186 @@
+{
+  "source_database": "final_assessment_v2.db",
+  "fixed_seed": 20261022,
+  "artifacts": [
+    {
+      "path": "carrier_calendars.csv",
+      "bytes": 103232,
+      "sha256": "ed487c6dc3f9a254925322aada332d584570882335b2ff21670e84ffb9598be7"
+    },
+    {
+      "path": "carrier_calendars.json",
+      "bytes": 256900,
+      "sha256": "faa7c3bbe1b796d65102255a8699ed214c4474e161b3f51e6e95d286d2d98773"
+    },
+    {
+      "path": "carrier_scans.csv",
+      "bytes": 6001814,
+      "sha256": "571dbc886fc136877782be5d555704695ef7d9ce8b3e09b93e54bad366c8ecab"
+    },
+    {
+      "path": "carrier_scans.json",
+      "bytes": 10912203,
+      "sha256": "7117eaf1c8d3d0870b562161559caf51d9bccc3fbd288f14b3c829802ed9bc11"
+    },
+    {
+      "path": "carrier_service_zones.csv",
+      "bytes": 2636,
+      "sha256": "03b98c7fd87f7dab0cba6888bf7bb91546220b0a3cb9a852e48b815c83d2b947"
+    },
+    {
+      "path": "carrier_service_zones.json",
+      "bytes": 8263,
+      "sha256": "e1c1cdb7cba16231bfff1ab854a1acfefe304eb11d616c4d44f545fd0c92f1b5"
+    },
+    {
+      "path": "carriers.csv",
+      "bytes": 296,
+      "sha256": "cb4ecae5bab76236cd495f9fed0acf096a03607772dbad3ea9264236613ccfe0"
+    },
+    {
+      "path": "carriers.json",
+      "bytes": 724,
+      "sha256": "1069a971b9bd15541590c5159662caa7f112b8912f183decae5bfb1fb23d446d"
+    },
+    {
+      "path": "data_dictionary.csv",
+      "bytes": 4186,
+      "sha256": "71428083635b1cf21b3821cc330901730f666a9b4525c49703b4c1d0dc621f69"
+    },
+    {
+      "path": "delivery_promises.csv",
+      "bytes": 1840117,
+      "sha256": "2602001030385fe8b7ccbcb130fe7e0050ff3ce6508ae87a0716fa5a6ac5dfb9"
+    },
+    {
+      "path": "delivery_promises.json",
+      "bytes": 4720003,
+      "sha256": "644922b15a2422f0441ac75d8fb9a83419b6b4c9af81c94c52d4c29e027d454f"
+    },
+    {
+      "path": "fulfillment_nodes.csv",
+      "bytes": 1085,
+      "sha256": "5bc1f1820a9be259370efc848e02d353506c4f11b0b42904322f5d13820e3a30"
+    },
+    {
+      "path": "fulfillment_nodes.json",
+      "bytes": 2361,
+      "sha256": "95ad0848cc4cdbc6d961e4fd3bde78afee943ebc88b90fb257bb3e1a5f03962d"
+    },
+    {
+      "path": "holidays.csv",
+      "bytes": 1117,
+      "sha256": "a6f3de59cfe579fcbb20c8e629474a8bcbbdfa8a87e7a7a47267aa159284fd56"
+    },
+    {
+      "path": "holidays.json",
+      "bytes": 2259,
+      "sha256": "1c9a7a7f251856684042ce5875424eaf729299672eb9dfe5b0905bdea1fabbca"
+    },
+    {
+      "path": "inventory.csv",
+      "bytes": 6901,
+      "sha256": "e09d6d8a5757a61be7479e32f35cc3de5ba1b83fb17a6c299d24fad840f99254"
+    },
+    {
+      "path": "inventory.json",
+      "bytes": 16627,
+      "sha256": "6d317e283425a3db4a4d8988dcb5742b49ec0692169554844c758c5c63230a4f"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 5686,
+      "sha256": "2bf68694b6a559a6fcc88105045678ec44e1145b7cf19771a68a7a3e9f743256"
+    },
+    {
+      "path": "order_lines.csv",
+      "bytes": 4925196,
+      "sha256": "fbc887a2842cd15c9d4b613aa89abf151f3bf3d46b085dc79416aa03e30f4be0"
+    },
+    {
+      "path": "order_lines.json",
+      "bytes": 11732220,
+      "sha256": "6f771588c00dfb831ebb215bd7ac31387806895128cf6a80ac6a7c5695e7ee7a"
+    },
+    {
+      "path": "orders.csv",
+      "bytes": 4068720,
+      "sha256": "bef94bf5bfc57a58405268e67e467e1793a8e3866765e5d22d3beb00403d0fdc"
+    },
+    {
+      "path": "orders.json",
+      "bytes": 9518639,
+      "sha256": "efe13dee09e8829279b70a75420023b25fa05576ab0fc5dde684b3a0abf5f285"
+    },
+    {
+      "path": "seed.sql",
+      "bytes": 67204530,
+      "sha256": "ce54b77faa5061819372bc40ff0192aba4987b187104ebf012e47162156dd69e"
+    },
+    {
+      "path": "service_levels.csv",
+      "bytes": 157,
+      "sha256": "12d0f6100ebc96db98486f5dacc2d7b1413753009ae2c74dc5af6cf7c989138c"
+    },
+    {
+      "path": "service_levels.json",
+      "bytes": 343,
+      "sha256": "d5749d1c3dc178149d38000b8e3de9b0ca3229829251cd9b77a24a92fa40753e"
+    },
+    {
+      "path": "shipment_lines.csv",
+      "bytes": 1752045,
+      "sha256": "afd75e8f2c9dc85ca002350bb94b9e81e47060447dc956392b787dc2a2751ce5"
+    },
+    {
+      "path": "shipment_lines.json",
+      "bytes": 4459619,
+      "sha256": "e2dbb6117b45556126efa85d0fabaa740ee054a25d89073eff7bc24c54cff55f"
+    },
+    {
+      "path": "shipments.csv",
+      "bytes": 5018190,
+      "sha256": "23b2b1c5539fcfb22adfa8b26f1e9131486dcf7cee7229412164f2b7635577c2"
+    },
+    {
+      "path": "shipments.json",
+      "bytes": 10449455,
+      "sha256": "122e2fedbe58c8caffb2501841830dd2810ace938215bb8f1720df476c2c4030"
+    },
+    {
+      "path": "skus.csv",
+      "bytes": 246,
+      "sha256": "342c4e4b7210d60fad81f6f8f6de4023d412b121b55be66410f7738f91194d21"
+    },
+    {
+      "path": "skus.json",
+      "bytes": 538,
+      "sha256": "30982d790edba3343bca041cc8fb385bb84c64f57f223b37f5c30bfa0a81c52e"
+    },
+    {
+      "path": "tracking_events.csv",
+      "bytes": 21894259,
+      "sha256": "e8df8f21ab282bb1373a3c4318df0ddf13dcefdbdaf26ca235b2df3b300701b0"
+    },
+    {
+      "path": "tracking_events.json",
+      "bytes": 44075007,
+      "sha256": "7c2a819e8ed07934ca15a81fd9b01c694a69c9577d4af2787a4b5bddd05e3c91"
+    },
+    {
+      "path": "validation_summary.json",
+      "bytes": 995,
+      "sha256": "db23a9073db667ae59593bdfc78070527aa473aec7929e53f66e0f723f07674b"
+    },
+    {
+      "path": "warehouse_capacity.csv",
+      "bytes": 158443,
+      "sha256": "7f67363c89e4012eb6f427e6c70e76c6045317c4176537eb4f6ab67349ab8bc3"
+    },
+    {
+      "path": "warehouse_capacity.json",
+      "bytes": 492917,
+      "sha256": "a0af309d64f7315f124df914a8e18e543f66ae4e93b637c80e9ce563de417606"
+    }
+  ]
+}

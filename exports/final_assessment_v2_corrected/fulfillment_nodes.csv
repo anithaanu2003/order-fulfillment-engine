@@ -1,0 +1,21 @@
+node_id,node_name,city,service_zone,is_active
+FUL-2026-000001,Hyderabad Warehouse,Hyderabad,SOUTH,1
+FUL-2026-000002,Bengaluru Warehouse,Bengaluru,SOUTH,1
+FUL-2026-000003,Chennai Warehouse,Chennai,SOUTH,1
+FUL-2026-000004,Mumbai Warehouse,Mumbai,WEST,1
+FUL-2026-000005,Pune Warehouse,Pune,WEST,1
+FUL-2026-000006,Ahmedabad Warehouse,Ahmedabad,WEST,1
+FUL-2026-000007,Delhi Warehouse,Delhi,NORTH,1
+FUL-2026-000008,Jaipur Warehouse,Jaipur,NORTH,1
+FUL-2026-000009,Lucknow Warehouse,Lucknow,NORTH,1
+FUL-2026-000010,Kolkata Warehouse,Kolkata,EAST,1
+FUL-2026-000011,Bhubaneswar Warehouse,Bhubaneswar,EAST,1
+FUL-2026-000012,Patna Warehouse,Patna,EAST,1
+FUL-2026-000013,Kochi Warehouse,Kochi,SOUTH,1
+FUL-2026-000014,Coimbatore Warehouse,Coimbatore,SOUTH,1
+FUL-2026-000015,Visakhapatnam Warehouse,Visakhapatnam,SOUTH,1
+FUL-2026-000016,Indore Warehouse,Indore,CENTRAL,1
+FUL-2026-000017,Bhopal Warehouse,Bhopal,CENTRAL,1
+FUL-2026-000018,Nagpur Warehouse,Nagpur,CENTRAL,1
+FUL-2026-000019,Guwahati Warehouse,Guwahati,NORTHEAST,1
+FUL-2026-000020,Dehradun Warehouse,Dehradun,NORTH,1

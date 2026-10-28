@@ -1,0 +1,6 @@
+case_id,anomaly_type,order_timestamp,promise_created_at,promised_delivery_start,promised_delivery_end,allocated_quantity,available_quantity,carrier_id,service_level_id,destination_zone,supported_zone,created_at,dispatched_at,delivered_at,ordered_quantity,shipped_quantity,reported_rollup_quantity,shipment_1_quantity,shipment_2_quantity
+ANOM-001,PROMISE_BEFORE_ORDER,2026-10-22T10:00:00,2026-10-22T10:05:00,2026-10-21T00:00:00,2026-10-23T23:59:59,,,,,,,,,,,,,,
+ANOM-002,ALLOCATION_EXCEEDS_INVENTORY,2026-10-22T10:00:00,,,,8,5,,,,,,,,8,8,,,
+ANOM-003,CARRIER_UNSUPPORTED_FOR_ZONE,2026-10-22T10:00:00,,,,,,CAR-000001,SVC-000001,CENTRAL,NORTH,,,,,,,,
+ANOM-004,DELIVERED_BEFORE_DISPATCH,2026-10-22T10:00:00,,,,,,,,,,2026-10-22T11:00:00,2026-10-23T09:00:00,2026-10-22T18:00:00,,,,,
+ANOM-005,SPLIT_SHIPMENT_ROLLUP_INCORRECT,2026-10-22T10:00:00,,,,,,,,,,,,,10,10,12,6,4

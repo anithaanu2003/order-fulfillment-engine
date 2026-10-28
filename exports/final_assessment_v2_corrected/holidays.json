@@ -1,0 +1,15 @@
+[
+{"holiday_date":"2026-10-02","holiday_id":"HOL-2026-001","holiday_name":"Gandhi Jayanti","is_active":1,"node_id":null,"service_zone":null},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000001","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000001","service_zone":"SOUTH"},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000002","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000002","service_zone":"SOUTH"},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000003","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000003","service_zone":"SOUTH"},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000013","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000013","service_zone":"SOUTH"},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000014","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000014","service_zone":"SOUTH"},
+{"holiday_date":"2026-10-20","holiday_id":"HOL-2026-002-FUL-2026-000015","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000015","service_zone":"SOUTH"},
+{"holiday_date":"2026-11-08","holiday_id":"HOL-2026-003-FUL-2026-000007","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000007","service_zone":"NORTH"},
+{"holiday_date":"2026-11-08","holiday_id":"HOL-2026-003-FUL-2026-000008","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000008","service_zone":"NORTH"},
+{"holiday_date":"2026-11-08","holiday_id":"HOL-2026-003-FUL-2026-000009","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000009","service_zone":"NORTH"},
+{"holiday_date":"2026-11-08","holiday_id":"HOL-2026-003-FUL-2026-000020","holiday_name":"Regional Festival Holiday","is_active":1,"node_id":"FUL-2026-000020","service_zone":"NORTH"},
+{"holiday_date":"2026-11-14","holiday_id":"HOL-2026-004","holiday_name":"Children's Day Observance","is_active":1,"node_id":null,"service_zone":null},
+{"holiday_date":"2026-12-25","holiday_id":"HOL-2026-005","holiday_name":"Christmas","is_active":1,"node_id":null,"service_zone":null}
+]

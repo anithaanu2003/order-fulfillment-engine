@@ -6,11 +6,26 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATABASE_FILE = PROJECT_ROOT / "data" / "fulfillment.db"
 
 
-def seed_master_data():
-    with sqlite3.connect(DATABASE_FILE) as connection:
+def seed_master_data(database_file=None):
+    """Seed master data into the selected database."""
+    target_database = (
+        Path(database_file)
+        if database_file is not None
+        else DATABASE_FILE
+    )
+
+    if not target_database.is_absolute():
+        target_database = PROJECT_ROOT / target_database
+
+    if not target_database.is_file():
+        raise FileNotFoundError(
+            f"Database not found: {target_database}. "
+            "Initialize it before seeding."
+        )
+
+    with sqlite3.connect(target_database) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
-        # Sample products
         connection.executemany(
             """
             INSERT OR IGNORE INTO skus
@@ -26,7 +41,6 @@ def seed_master_data():
             ],
         )
 
-        # Fulfillment nodes
         connection.executemany(
             """
             INSERT OR IGNORE INTO fulfillment_nodes
@@ -56,8 +70,7 @@ def seed_master_data():
                 ("FUL-2026-000020", "Dehradun Warehouse", "Dehradun", "NORTH"),
             ],
         )
-    
-        # Carriers
+
         connection.executemany(
             """
             INSERT OR IGNORE INTO carriers
@@ -78,12 +91,13 @@ def seed_master_data():
             ],
         )
 
-        # Verify row counts
         for table in ("skus", "fulfillment_nodes", "carriers"):
             count = connection.execute(
                 f"SELECT COUNT(*) FROM {table}"
             ).fetchone()[0]
             print(f"{table}: {count} records")
+
+        print(f"Database: {target_database}")
 
 
 if __name__ == "__main__":

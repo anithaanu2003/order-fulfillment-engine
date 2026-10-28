@@ -1,0 +1,7 @@
+[
+{"category":"Electronics","is_active":1,"sku_id":"SKU-000001","sku_name":"Laptop","unit_weight_kg":1.8},
+{"category":"Accessories","is_active":1,"sku_id":"SKU-000002","sku_name":"Wireless Mouse","unit_weight_kg":0.15},
+{"category":"Accessories","is_active":1,"sku_id":"SKU-000003","sku_name":"Keyboard","unit_weight_kg":0.7},
+{"category":"Electronics","is_active":1,"sku_id":"SKU-000004","sku_name":"Monitor","unit_weight_kg":4.5},
+{"category":"Audio","is_active":1,"sku_id":"SKU-000005","sku_name":"Headphones","unit_weight_kg":0.3}
+]

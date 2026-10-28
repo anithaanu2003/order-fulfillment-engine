@@ -1,21 +1,33 @@
 
 import sqlite3
+from pathlib import Path
 
 from .init_db import DATABASE_FILE
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-def load_inventory_records():
-    """Load inventory records in the format used by the allocation engine."""
-    with sqlite3.connect(DATABASE_FILE) as connection:
+
+def resolve_database_path(database_file=None):
+    target = Path(database_file) if database_file is not None else DATABASE_FILE
+
+    if not target.is_absolute():
+        target = PROJECT_ROOT / target
+
+    if not target.exists():
+        raise FileNotFoundError(f"Database does not exist: {target}")
+
+    return target
+
+
+def load_inventory_records(database_file=None):
+    """Load inventory records for the selected database."""
+    target = resolve_database_path(database_file)
+
+    with sqlite3.connect(target) as connection:
         connection.row_factory = sqlite3.Row
-
         rows = connection.execute(
             """
-            SELECT
-                node_id,
-                sku_id,
-                available_quantity,
-                reserved_quantity
+            SELECT node_id, sku_id, available_quantity, reserved_quantity
             FROM inventory
             ORDER BY node_id, sku_id
             """
@@ -24,11 +36,15 @@ def load_inventory_records():
     return [dict(row) for row in rows]
 
 
-def load_capacity_records():
-    """Load warehouse capacity records for the current capacity date."""
-    with sqlite3.connect(DATABASE_FILE) as connection:
-        connection.row_factory = sqlite3.Row
+def load_capacity_records(capacity_date=None, database_file=None):
+    """Load capacity records for a specified date and database."""
+    target = resolve_database_path(database_file)
 
+    if capacity_date is None:
+        capacity_date = "2026-10-26"
+
+    with sqlite3.connect(target) as connection:
+        connection.row_factory = sqlite3.Row
         rows = connection.execute(
             """
             SELECT
@@ -38,22 +54,21 @@ def load_capacity_records():
                 max_units,
                 used_units
             FROM warehouse_capacity
-            WHERE capacity_date = (
-                SELECT MAX(capacity_date)
-                FROM warehouse_capacity
-            )
+            WHERE capacity_date = ?
             ORDER BY node_id
-            """
+            """,
+            (capacity_date,),
         ).fetchall()
 
     return [dict(row) for row in rows]
 
 
-def load_orders_with_lines():
-    """Load orders and group their order lines by order ID."""
-    with sqlite3.connect(DATABASE_FILE) as connection:
-        connection.row_factory = sqlite3.Row
+def load_orders_with_lines(database_file=None):
+    """Load CREATED orders and group their lines by order ID."""
+    target = resolve_database_path(database_file)
 
+    with sqlite3.connect(target) as connection:
+        connection.row_factory = sqlite3.Row
         rows = connection.execute(
             """
             SELECT
@@ -98,4 +113,3 @@ def load_orders_with_lines():
         })
 
     return list(orders.values())
-

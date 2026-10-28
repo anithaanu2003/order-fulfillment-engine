@@ -1,0 +1,12 @@
+[
+{"carrier_id":"CAR-000001","carrier_name":"FastShip","is_active":1},
+{"carrier_id":"CAR-000002","carrier_name":"Reliable Express","is_active":1},
+{"carrier_id":"CAR-000003","carrier_name":"National Parcel","is_active":1},
+{"carrier_id":"CAR-000004","carrier_name":"BlueDart","is_active":1},
+{"carrier_id":"CAR-000005","carrier_name":"Delhivery","is_active":1},
+{"carrier_id":"CAR-000006","carrier_name":"DTDC","is_active":1},
+{"carrier_id":"CAR-000007","carrier_name":"Ecom Express","is_active":1},
+{"carrier_id":"CAR-000008","carrier_name":"Shadowfax","is_active":1},
+{"carrier_id":"CAR-000009","carrier_name":"XpressBees","is_active":1},
+{"carrier_id":"CAR-000010","carrier_name":"India Post Logistics","is_active":1}
+]

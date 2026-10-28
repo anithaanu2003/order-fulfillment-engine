@@ -1,0 +1,5 @@
+[
+{"cutoff_time":"17:00","is_active":1,"service_level_id":"SVC-000001","service_name":"STANDARD","transit_days":3},
+{"cutoff_time":"14:00","is_active":1,"service_level_id":"SVC-000002","service_name":"EXPRESS","transit_days":1},
+{"cutoff_time":"18:00","is_active":1,"service_level_id":"SVC-000003","service_name":"ECONOMY","transit_days":5}
+]

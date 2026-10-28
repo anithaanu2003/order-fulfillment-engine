@@ -1,5 +1,6 @@
 
 import sqlite3
+from pathlib import Path
 from datetime import datetime
 
 from . import init_db
@@ -30,14 +31,34 @@ ALLOWED_TRANSITIONS = {
 }
 
 
+def resolve_database_path(database_file=None):
+    """Resolve an optional database path without changing the default."""
+    target = (
+        Path(database_file)
+        if database_file is not None
+        else init_db.DATABASE_FILE
+    )
+
+    if not target.is_absolute():
+        target = init_db.PROJECT_ROOT / target
+
+    return target
+
+
 def record_tracking_event(
     shipment_id,
     event_type,
     event_timestamp,
     event_location=None,
     event_notes=None,
+    database_file=None,
 ):
-    """Append a tracking event and update the shipment's current state."""
+    """Append a validated tracking event and update its shipment state.
+
+    When database_file is supplied, every read and write uses that database.
+    If any validation or database operation fails, the transaction is rolled
+    back, including shipment and parent-order status changes.
+    """
 
     if event_type not in ALLOWED_EVENT_TYPES:
         raise ValueError("Invalid tracking event type.")
@@ -48,18 +69,19 @@ def record_tracking_event(
     if not event_timestamp:
         raise ValueError("Event timestamp is required.")
 
-    # Validate that the timestamp has a supported ISO format.
     try:
         event_time = datetime.fromisoformat(event_timestamp)
     except (TypeError, ValueError):
         raise ValueError("Invalid event timestamp format.") from None
 
-    with sqlite3.connect(init_db.DATABASE_FILE) as connection:
+    target_database = resolve_database_path(database_file)
+
+    with sqlite3.connect(target_database) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
         shipment = connection.execute(
             """
-            SELECT shipment_id, shipment_status, dispatched_at
+            SELECT shipment_id, shipment_status, dispatched_at, order_id
             FROM shipments
             WHERE shipment_id = ?
             """,
@@ -71,6 +93,7 @@ def record_tracking_event(
 
         current_status = shipment[1]
         dispatched_at = shipment[2]
+        order_id = shipment[3]
 
         if event_type not in ALLOWED_TRANSITIONS[current_status]:
             raise ValueError(
@@ -78,7 +101,6 @@ def record_tracking_event(
                 f"{current_status} -> {event_type}"
             )
 
-        # A shipment cannot be delivered before it has been dispatched.
         if event_type == "DELIVERED":
             dispatched_event = connection.execute(
                 """
@@ -96,7 +118,6 @@ def record_tracking_event(
                     "A shipment cannot be delivered before dispatch."
                 )
 
-            # Compare actual timestamps, not just shipment statuses.
             dispatch_time = datetime.fromisoformat(dispatched_at)
 
             if event_time.tzinfo != dispatch_time.tzinfo:
@@ -110,7 +131,6 @@ def record_tracking_event(
                     "Delivery timestamp cannot be earlier than dispatch."
                 )
 
-        # Prevent tracking event timestamps from going backwards.
         latest_event = connection.execute(
             """
             SELECT event_timestamp
@@ -207,4 +227,53 @@ def record_tracking_event(
                 (event_type, shipment_id),
             )
 
-    return event_id
+        if event_type == "DELIVERED":
+            current_order = connection.execute(
+                """
+                SELECT order_status
+                FROM orders
+                WHERE order_id = ?
+                """,
+                (order_id,),
+            ).fetchone()
+
+            if current_order is None:
+                raise ValueError("Parent order does not exist.")
+
+            if current_order[0] in {"CANCELLED", "EXCEPTION"}:
+                raise ValueError(
+                    "Cannot update the status of a cancelled "
+                    "or exception order through shipment delivery."
+                )
+
+            total_shipments, delivered_shipments = connection.execute(
+                """
+                SELECT
+                    COUNT(*),
+                    SUM(
+                        CASE
+                            WHEN shipment_status = 'DELIVERED' THEN 1
+                            ELSE 0
+                        END
+                    )
+                FROM shipments
+                WHERE order_id = ?
+                """,
+                (order_id,),
+            ).fetchone()
+
+            if delivered_shipments == total_shipments:
+                order_status = "DELIVERED"
+            else:
+                order_status = "PARTIALLY_DELIVERED"
+
+            connection.execute(
+                """
+                UPDATE orders
+                SET order_status = ?
+                WHERE order_id = ?
+                """,
+                (order_status, order_id),
+            )
+
+        return event_id

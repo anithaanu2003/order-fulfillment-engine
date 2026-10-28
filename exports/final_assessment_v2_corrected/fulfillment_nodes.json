@@ -1,0 +1,22 @@
+[
+{"city":"Hyderabad","is_active":1,"node_id":"FUL-2026-000001","node_name":"Hyderabad Warehouse","service_zone":"SOUTH"},
+{"city":"Bengaluru","is_active":1,"node_id":"FUL-2026-000002","node_name":"Bengaluru Warehouse","service_zone":"SOUTH"},
+{"city":"Chennai","is_active":1,"node_id":"FUL-2026-000003","node_name":"Chennai Warehouse","service_zone":"SOUTH"},
+{"city":"Mumbai","is_active":1,"node_id":"FUL-2026-000004","node_name":"Mumbai Warehouse","service_zone":"WEST"},
+{"city":"Pune","is_active":1,"node_id":"FUL-2026-000005","node_name":"Pune Warehouse","service_zone":"WEST"},
+{"city":"Ahmedabad","is_active":1,"node_id":"FUL-2026-000006","node_name":"Ahmedabad Warehouse","service_zone":"WEST"},
+{"city":"Delhi","is_active":1,"node_id":"FUL-2026-000007","node_name":"Delhi Warehouse","service_zone":"NORTH"},
+{"city":"Jaipur","is_active":1,"node_id":"FUL-2026-000008","node_name":"Jaipur Warehouse","service_zone":"NORTH"},
+{"city":"Lucknow","is_active":1,"node_id":"FUL-2026-000009","node_name":"Lucknow Warehouse","service_zone":"NORTH"},
+{"city":"Kolkata","is_active":1,"node_id":"FUL-2026-000010","node_name":"Kolkata Warehouse","service_zone":"EAST"},
+{"city":"Bhubaneswar","is_active":1,"node_id":"FUL-2026-000011","node_name":"Bhubaneswar Warehouse","service_zone":"EAST"},
+{"city":"Patna","is_active":1,"node_id":"FUL-2026-000012","node_name":"Patna Warehouse","service_zone":"EAST"},
+{"city":"Kochi","is_active":1,"node_id":"FUL-2026-000013","node_name":"Kochi Warehouse","service_zone":"SOUTH"},
+{"city":"Coimbatore","is_active":1,"node_id":"FUL-2026-000014","node_name":"Coimbatore Warehouse","service_zone":"SOUTH"},
+{"city":"Visakhapatnam","is_active":1,"node_id":"FUL-2026-000015","node_name":"Visakhapatnam Warehouse","service_zone":"SOUTH"},
+{"city":"Indore","is_active":1,"node_id":"FUL-2026-000016","node_name":"Indore Warehouse","service_zone":"CENTRAL"},
+{"city":"Bhopal","is_active":1,"node_id":"FUL-2026-000017","node_name":"Bhopal Warehouse","service_zone":"CENTRAL"},
+{"city":"Nagpur","is_active":1,"node_id":"FUL-2026-000018","node_name":"Nagpur Warehouse","service_zone":"CENTRAL"},
+{"city":"Guwahati","is_active":1,"node_id":"FUL-2026-000019","node_name":"Guwahati Warehouse","service_zone":"NORTHEAST"},
+{"city":"Dehradun","is_active":1,"node_id":"FUL-2026-000020","node_name":"Dehradun Warehouse","service_zone":"NORTH"}
+]
