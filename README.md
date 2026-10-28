@@ -1,238 +1,152 @@
 # Order Fulfillment & Delivery Promise Engine
 
-## 1. Project Overview
+A Python and SQLite assessment project that models inventory-aware order allocation, fulfillment-node selection, carrier serviceability, delivery promises, shipment lifecycle events, delivery outcomes, and anomaly validation.
 
-The Order Fulfillment & Delivery Promise Engine is a Python-based data engineering and business-rules project that models order allocation, inventory availability, warehouse capacity, carrier serviceability, delivery promises, shipment tracking, and delivery outcomes.
+**Repository:** https://github.com/anithaanu2003/order-fulfillment-engine/tree/master
 
-The assessment focuses on generating a large, reproducible synthetic dataset, enforcing relational integrity and business rules, simulating realistic fulfillment scenarios, validating anomalous records, and exporting data in reusable formats.
+## 1. Problem Statement
 
-The project uses Python, SQLite, pytest, and deterministic data-generation techniques.
+Order fulfillment requires more than selecting a warehouse with available stock. A reliable system must consider unreserved inventory, warehouse capacity, destination service zones, carrier cutoffs, transit times, holidays, and carrier operating calendars.
 
-## 2. Assessment Objectives
+This project implements these business rules and generates a synthetic dataset for testing relational integrity, allocation decisions, delivery promises, shipment histories, and anomalous operational records.
 
-The implementation is designed to address the following requirements:
+The project is designed to make business decisions traceable and validation results reproducible.
 
-- Generate a synthetic dataset with 50,000 orders.
-- Model 20 fulfillment nodes, 10 carriers, inventory, warehouse capacity, carrier-service zones, service levels, and operating calendars.
-- Generate order lines and shipment records with valid primary-key and foreign-key relationships.
-- Support split shipments when an order is fulfilled by multiple nodes.
-- Calculate delivery promises using service cutoffs, transit times, business days, holidays, and carrier operating calendars.
-- Generate chronological shipment tracking events and delivery outcomes using documented lifecycle rules.
-- Introduce labelled anomalous scenarios separately from the normal operational dataset.
-- Validate data integrity, arithmetic consistency, event sequences, and anomaly classifications.
-- Export tables to CSV and JSON, with checksums and row counts recorded in a manifest.
-- Verify deterministic output using a fixed random seed and repeat-run comparisons.
+## 2. Verified Project Snapshot
 
-**Target scale:** 50,000 orders, 20 fulfillment nodes, 10 carriers, and 100,000 tracking events.
+The committed dataset was exported from `final_assessment_v2.db` using the fixed seed configuration `20261022`.
 
-The targets describe the assessment goals; final completion must be confirmed through the validation scripts and generated dataset.
+| Metric | Verified result |
+|---|---:|
+| Orders | 50,000 |
+| Order lines | 100,104 |
+| Fulfillment nodes | 20 |
+| Carriers | 10 |
+| SKUs | 5 |
+| Allocated orders processed | 20,000 |
+| Delivery promises | 20,000 |
+| Shipments | 36,374 |
+| Shipment lines | 39,818 |
+| Tracking events | 174,607 |
+| Carrier scans | 36,374 |
+| Exported database tables | 16 |
+| Total rows across exported tables | 462,018 |
+
+These figures describe the committed dataset snapshot, not a claim that every order has been fulfilled.
+
+### Allocation coverage limitation
+
+The allocation batch processed 20,000 orders. The remaining 30,000 orders are still in the `CREATED` state and have not been allocated in this snapshot. This is an important limitation when interpreting fulfillment coverage and delivery outcomes.
+
+The tracking-event count exceeds the original target of 100,000. A higher event count alone does not establish complete end-to-end fulfillment, so event validity and shipment outcomes must be considered separately.
 
 ## 3. Technology Stack
 
-- Python 3.11+
+- Python
 - SQLite
 - pytest
+- SQL
 - CSV and JSON
 - Git and GitHub
-- PowerShell or another terminal
 
-The project has been developed locally using Python 3.13.
+The implementation was developed and tested in a Windows environment using Python 3.13.
 
 ## 4. Data Model
 
 The relational schema is maintained in `sql/schema.sql`.
 
-The principal entities are:
+The dataset includes 16 tables:
 
-- **Product master:** SKUs and product attributes.
-- **Fulfillment nodes:** Warehouses, cities, and service zones.
-- **Carrier master:** Carrier identities and active status.
-- **Orders and order lines:** Order timestamps, destinations, products, quantities, and prices.
-- **Inventory:** Available and reserved quantities by node and SKU.
-- **Warehouse capacity:** Daily order-line and unit limits.
-- **Service levels:** Transit durations and cutoff times.
-- **Carrier-service zones:** Supported carrier, service-level, and destination-zone combinations.
-- **Shipments and shipment lines:** Shipment allocation and quantities fulfilled from each node.
-- **Tracking events:** Append-only shipment lifecycle history.
-- **Delivery promises:** Promised delivery windows and promise versions.
-- **Carrier scans:** Detailed carrier scan history.
-- **Holiday calendars:** Global, regional, and node-specific non-operating dates.
-- **Carrier operating calendars:** Carrier operating dates and cutoff information.
+- `skus` — product identifiers and attributes
+- `fulfillment_nodes` — fulfillment locations and service zones
+- `carriers` — carrier records and active status
+- `orders` — order timestamps, destinations, and status
+- `order_lines` — SKU quantities and prices
+- `inventory` — available and reserved stock
+- `warehouse_capacity` — daily warehouse capacity
+- `service_levels` — service-level and transit-time information
+- `carrier_service_zones` — carrier-service availability by zone
+- `shipments` — fulfillment and shipment status
+- `shipment_lines` — quantities assigned to each shipment
+- `delivery_promises` — promised delivery information
+- `tracking_events` — shipment lifecycle history
+- `carrier_scans` — carrier scan records
+- `holidays` — non-operating dates
+- `carrier_calendars` — carrier operating dates and cutoffs
 
-## 5. Business Rules
+## 5. Business Rules and Design Decisions
 
 ### Inventory and allocation
 
-- Unreserved inventory is calculated from available and reserved quantities.
-- Allocations must not exceed the available unreserved stock.
-- Order-line quantities must be fulfilled consistently across allocated shipment lines.
-- An order may be split across multiple fulfillment nodes when permitted by inventory and capacity.
-- Failed persistence operations must roll back partial changes.
-
-### Warehouse capacity
-
-- Allocation must respect daily order-line and unit limits.
-- Capacity usage must be recorded against the relevant fulfillment date.
-- Capacity records must exist for the applicable node and date.
+- Allocation considers unreserved inventory.
+- Allocations must not exceed available stock.
+- Orders may be split across multiple fulfillment nodes.
+- Shipment-line quantities must remain consistent with allocated order-line quantities.
+- Allocation must respect warehouse capacity.
+- Persistence operations use transaction boundaries to prevent partial updates.
 
 ### Carrier selection and delivery promises
 
-- The selected carrier service must be active and support the destination zone.
-- Delivery promises must respect cutoff times, transit duration, business days, holidays, and carrier operating calendars.
-- Promise versions and status changes must preserve historical records.
+- The selected carrier service must support the destination zone.
+- Delivery promises account for service cutoffs, transit duration, business days, holidays, and carrier calendars.
+- Promise records preserve relevant delivery commitments and versions.
 
 ### Shipment lifecycle
 
-- Tracking events must follow permitted lifecycle transitions.
-- Event timestamps must be chronological for each shipment.
-- Event sequences must be unique and increasing within each shipment.
-- Delivery must not occur before dispatch.
-- Shipment and order statuses must remain consistent with recorded outcomes.
-- Tracking history must be preserved rather than overwritten.
+- Tracking events are appended to shipment histories.
+- Event sequences must increase within each shipment.
+- Timestamps must follow valid chronology.
+- Delivery must not precede dispatch.
+- Shipment status must agree with the latest recorded lifecycle event.
 
-## 6. Synthetic Data Generation
+### Why these rules matter
 
-The project includes scripts for generating and preparing master data, orders, order lines, inventory, warehouse capacity, carrier-service mappings, holiday calendars, and carrier operating calendars.
+Separating inventory, capacity, carrier serviceability, and delivery timing makes allocation decisions easier to test and explain. Transactional persistence helps preserve consistency when allocation cannot be completed. Append-only tracking history provides a record of shipment progress rather than replacing previous events.
 
-The target configuration uses the fixed seed `20261022` for reproducibility.
+## 6. Anomaly Scenarios and Ground Truth
 
-A complete generation workflow must support:
+The anomaly dataset is stored separately from the normal operational export in `data/anomaly_cases/`.
 
-1. Initializing a fresh database.
-2. Creating master data.
-3. Generating orders and order lines.
-4. Preparing inventory and capacity.
-5. Configuring carrier services and operating calendars.
-6. Allocating eligible orders.
-7. Generating shipments, tracking events, and delivery outcomes.
-8. Validating and exporting the resulting dataset.
+It includes five scenarios:
 
-Generation must be repeatable from a clean environment. A populated operational database must not be assumed to produce identical output when generation scripts are rerun.
-
-## 7. Shipment Events and Delivery Outcomes
-
-Shipment tracking histories are designed to represent realistic operational progress, such as:
-
-`CREATED → DISPATCHED → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED`
-
-Exceptions may occur where permitted by the lifecycle rules, followed by valid recovery transitions when applicable.
-
-The event generator must use documented rules for event ordering, timestamp progression, shipment status updates, and delivery outcomes. It must not create arbitrary events merely to reach the target count.
-
-The assessment target is 100,000 tracking events. Completion must be verified using actual generated records and lifecycle validation.
-
-## 8. Anomaly Scenarios and Ground Truth
-
-Anomalous examples are maintained separately from normal operational inputs.
-
-The implemented scenario set covers:
-
-| Scenario | Expected validation |
+| Scenario | Validation objective |
 |---|---|
-| Promise before order | Reject invalid promise chronology |
-| Allocation exceeds inventory | Reject invalid allocation quantity |
-| Carrier unsupported for zone | Reject unsupported carrier-service combination |
-| Delivered before dispatch | Flag invalid lifecycle chronology |
-| Incorrect split-shipment rollup | Flag mismatch between shipment quantities and reported total |
+| Promise before order | Detect invalid promise chronology |
+| Allocation exceeds inventory | Detect over-allocation |
+| Unsupported carrier zone | Detect an invalid carrier-service combination |
+| Delivered before dispatch | Detect invalid lifecycle chronology |
+| Incorrect split-shipment rollup | Detect inconsistent shipment totals |
 
-Each scenario has a unique identifier, input fields, an expected anomaly label, and an expected validation decision.
+The files are:
 
-The anomaly labels and expected decisions must remain separate from operational input features to avoid data leakage during downstream analysis.
+- `scenario_inputs.csv` — scenario input features
+- `ground_truth.csv` — expected labels and validation outcomes
+- `anomaly_cases.json` — structured scenario definitions
 
-The anomaly generator and validator are tested for deterministic output and scenario consistency.
+Separating ground-truth labels from scenario inputs helps prevent target leakage when these examples are used for downstream analysis.
 
-## 9. Data Validation
+**Anomaly validation result:** all five scenarios passed the project validator, and the scenario IDs matched their ground-truth labels.
 
-Validation covers the following areas.
+## 7. Exported Deliverables
 
-### Relational integrity
+The final export is located at:
 
-- Primary-key uniqueness.
-- Foreign-key integrity.
-- Required fields and valid enumerated values.
-- Duplicate business records where uniqueness is required.
+`exports/final_assessment_v2_corrected/`
 
-### Arithmetic and operational rules
+It contains:
 
-- Inventory availability and reservation limits.
-- Warehouse capacity constraints.
-- Order-line and shipment-line quantities.
-- Split-shipment totals and order-level rollups.
-- Carrier-serviceability by destination zone.
+- CSV and JSON exports for the 16 database tables
+- `manifest.json` — exported file checksums and row counts
+- `source_manifest.json` — source information and artifact checksums
+- `seed.sql` — SQL database dump
+- `data_dictionary.csv` — table and column metadata
+- `validation_summary.json` — validation results and dataset counts
 
-### Temporal integrity
+The SQL dump is approximately 64 MB. It is included as a full seed snapshot; GitHub has warned that it exceeds its recommended 50 MB file size.
 
-- Valid order and promise chronology.
-- Dispatch before delivery.
-- Chronological tracking-event timestamps.
-- Valid lifecycle transitions and event sequences.
-- Applicable holidays and carrier operating dates.
+## 8. Installation
 
-### Reproducibility
-
-- Fixed random seed.
-- Repeat-run comparison of generated files.
-- CSV and JSON row-count verification.
-- SHA-256 checksum verification through the export manifest.
-
-## 10. Export Deliverables
-
-The export workflow supports CSV and JSON representations of database tables.
-
-Each export snapshot includes a `manifest.json` file recording table row counts and file checksums.
-
-The assessment deliverables should include:
-
-- CSV exports.
-- JSON exports.
-- SQL schema and seed data.
-- Data dictionary.
-- Dataset manifest and source information.
-- Validation summary.
-- Anomaly scenario inputs.
-- Separate anomaly ground-truth labels.
-- Reproduction instructions and fixed-seed configuration.
-
-Exports should be written to a new or empty output directory so that existing snapshots are preserved. The export verifier must confirm file integrity and recorded row counts.
-
-## 11. Project Structure
-
-```text
-order-fulfillment-engine/
-├── src/
-│   ├── init_db.py
-│   ├── generate_orders.py
-│   ├── generate_order_lines.py
-│   ├── seed_master_data.py
-│   ├── seed_inventory.py
-│   ├── seed_capacity.py
-│   ├── seed_carrier_services.py
-│   ├── seed_calendars.py
-│   ├── allocate_orders.py
-│   ├── persist_allocations.py
-│   ├── calculate_delivery_promise.py
-│   ├── calculate_delivery_promise_from_db.py
-│   ├── shipment_lifecycle.py
-│   ├── generate_tracking_events.py
-│   ├── generate_carrier_scans.py
-│   ├── generate_anomaly_cases.py
-│   ├── validate_anomaly_cases.py
-│   ├── export_dataset.py
-│   └── verify_export.py
-├── tests/
-├── data/
-│   └── anomaly_cases/
-├── exports/
-├── docs/
-├── sql/
-│   └── schema.sql
-├── requirements.txt
-└── README.md
-```
-
-The directory listing above highlights key components; additional source and test files may be present.
-
-## 12. Installation and Setup
+Run the following commands from the repository root in PowerShell.
 
 Create and activate a virtual environment:
 
@@ -247,71 +161,95 @@ Install dependencies:
 python -m pip install -r requirements.txt
 ```
 
-Initialize the database:
+The repository includes database initialization and data preparation scripts under `src/`. Use a fresh, isolated database for data generation and follow the relevant script options before running database-mutating commands.
+
+**Important:** Do not treat a previously populated operational database as a clean reproducibility environment. The committed export is the validated snapshot used for this submission.
+
+## 9. Run the Tests
+
+From the repository root:
 
 ```powershell
-python -m src.init_db
+python -m pytest -q
 ```
 
-**Important:** Run data-seeding and allocation commands only against a fresh or intentionally prepared database. The existing operational database contains records and should not be treated as a clean starting point.
+**Recorded result:** 155 tests passed, with 5 subtests passed.
 
-## 13. Testing
+## 10. Verify the Anomaly Dataset
 
-Run the automated test suite from the project root:
+Run:
 
 ```powershell
-python -m pytest -v
+python .\src\validate_anomaly_cases.py
 ```
 
-Additional validation commands include:
+The recorded validation confirmed:
+
+- Five input scenarios
+- Five ground-truth labels
+- Read-only access to the operational database
+- Matching scenario identifiers and ground-truth records
+- Successful validation of all five scenarios
+
+## 11. Verify the Export
+
+Run:
 
 ```powershell
-python -m src.validate_anomaly_cases
-python -m src.verify_export exports/calendar_snapshot
+python .\src\verify_export.py .\exports\final_assessment_v2_corrected
 ```
 
-The export path above refers to an existing snapshot. Use the appropriate output directory for any newly generated dataset.
+The recorded verification result was:
 
-The test suite has previously reported 152 passing tests. Re-run the full suite against the final submission before reporting the final result.
+- 16 tables checked
+- 32 CSV/JSON files checked
+- 462,018 rows recorded in the export manifest
+- File checksums and row counts matched
 
-## 14. Reproducibility and Execution
+The finalization script also reported zero foreign-key violations and zero shipment-status/latest-event mismatches.
 
-A complete reproducibility check should:
+These are recorded results for the committed snapshot. Re-run the commands after changing the dataset or code.
 
-1. Start with a clean, isolated database.
-2. Use the documented seed and generation configuration.
-3. Generate the same dataset twice in separate clean environments.
-4. Compare record counts and output checksums.
-5. Verify relational integrity and business rules after each run.
-6. Confirm that anomaly labels and expected decisions are unchanged.
+## 12. Reproducibility
 
-The final README should identify the exact commands used to generate the final dataset and reproduce the validation results.
+The project uses the fixed seed `20261022` for synthetic data generation and anomaly scenario creation.
 
-## 15. Current Limitations and Completion Criteria
+A full reproducibility assessment should use a clean, isolated database, generate the dataset twice, and compare table counts, output checksums, lifecycle validity, allocation results, and anomaly labels.
 
-The project contains implemented database, allocation, delivery-promise, calendar, lifecycle, anomaly, and export components. However, the presence of individual components does not establish that the full assessment has been completed end to end.
+The exported snapshot has been verified against its manifest. A complete independent, clean-environment regeneration of the entire final dataset has not been established by the checks reported here.
 
-Before final submission, verify:
+## 13. Limitations and Next Steps
 
-- The full 50,000-order dataset.
-- The 20-node and 10-carrier targets.
-- The 100,000-event target with valid lifecycle histories.
-- Complete delivery outcomes and split-shipment consistency.
-- Reproducibility from a clean database.
-- CSV, JSON, and SQL deliverables.
-- Data dictionary, manifest, and validation summary.
-- Zero unexpected foreign-key violations.
-- Successful full test-suite execution.
-- Separate and validated anomaly ground truth.
+The current snapshot has the following limitations:
 
-Only verified results should be described as completed.
+1. Only 20,000 of the 50,000 orders were processed by the allocation batch.
+2. The remaining 30,000 orders are still `CREATED`.
+3. Allocation and delivery coverage should be expanded before claiming complete fulfillment across all orders.
+4. Full dataset regeneration should be automated and tested from a clean environment.
+5. Repeated-run reproducibility should be demonstrated by comparing independently generated datasets.
 
-## 16. Development Workflow and Tooling
+These limitations are disclosed so reviewers can distinguish implemented functionality from verified end-to-end coverage.
 
-The project was developed incrementally through database design, synthetic data preparation, business-rule implementation, persistence, lifecycle validation, testing, and debugging.
+## 14. AI-Assisted Development Disclosure
 
-AI-assisted tools were used for technical clarification and troubleshooting. Code and data behavior were checked through local execution, SQL queries, and automated tests.
+AI-assisted tools were used for technical clarification, debugging support, test development, and documentation refinement.
 
-## 17. Repository
+Project behavior was checked through local execution, SQL queries, automated tests, anomaly validation, and export verification. The final dataset was checked for foreign-key violations and shipment-status consistency.
 
-GitHub: https://github.com/anithaanu2003/order-fulfillment-engine
+
+## 15. Submission and Walkthrough
+
+**Public repository:**  
+https://github.com/anithaanu2003/order-fulfillment-engine/tree/master
+
+Suggested walkthrough:
+
+1. Explain the fulfillment problem and the data model.
+2. Demonstrate how inventory and capacity affect allocation.
+3. Explain carrier serviceability and delivery-promise calculations.
+4. Walk through shipment lifecycle validation.
+5. Demonstrate the five anomaly scenarios and their separate ground truth.
+6. Run the automated tests and export verifier.
+7. Discuss the allocation coverage limitation, reproducibility approach, and future improvements.
+
+The goal is to make the implementation, assumptions, validation evidence, and limitations understandable to another engineer.
