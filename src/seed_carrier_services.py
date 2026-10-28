@@ -8,19 +8,40 @@ DATABASE_FILE = PROJECT_ROOT / "data" / "fulfillment.db"
 ZONES = ("SOUTH", "WEST", "NORTH", "EAST", "CENTRAL", "NORTHEAST")
 
 
-def seed_carrier_services():
+def seed_carrier_services(database_file=None):
+    target_database = (
+        Path(database_file)
+        if database_file is not None
+        else DATABASE_FILE
+    )
+
+    if not target_database.is_absolute():
+        target_database = PROJECT_ROOT / target_database
+
+    if not target_database.is_file():
+        raise FileNotFoundError(
+            f"Database not found: {target_database}. "
+            "Initialize the database and seed master data first."
+        )
+
     service_records = [
         ("SVC-000001", "STANDARD", 3, "17:00", 1),
         ("SVC-000002", "EXPRESS", 1, "14:00", 1),
         ("SVC-000003", "ECONOMY", 5, "18:00", 1),
     ]
 
-    with sqlite3.connect(DATABASE_FILE) as connection:
+    with sqlite3.connect(target_database) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
         carriers = connection.execute(
             "SELECT carrier_id FROM carriers ORDER BY carrier_id"
         ).fetchall()
+
+        if len(carriers) != 10:
+            raise ValueError(
+                f"Expected 10 carriers, found {len(carriers)}. "
+                "Seed master data first."
+            )
 
         connection.executemany(
             """
@@ -37,22 +58,19 @@ def seed_carrier_services():
         )
 
         services = connection.execute(
-            "SELECT service_level_id FROM service_levels "
-            "WHERE service_level_id IN "
-            "('SVC-000001', 'SVC-000002', 'SVC-000003') "
-            "ORDER BY service_level_id"
-        ).fetchall()
-
-        if len(carriers) != 10:
-            raise ValueError(
-                f"Expected 10 carriers, found {len(carriers)}. "
-                "Seed master data first."
+            """
+            SELECT service_level_id
+            FROM service_levels
+            WHERE service_level_id IN (
+                'SVC-000001', 'SVC-000002', 'SVC-000003'
             )
+            ORDER BY service_level_id
+            """
+        ).fetchall()
 
         if len(services) != 3:
             raise ValueError("Expected three configured service levels.")
 
-        
         existing_routes = connection.execute(
             """
             SELECT carrier_id, service_level_id, service_zone
@@ -138,6 +156,7 @@ def seed_carrier_services():
             """
         ).fetchall()
 
+    print(f"Database: {target_database}")
     print(f"Delivery services found: {len(services)}")
     print(f"Carrier-zone service routes found: {len(routes)}")
 

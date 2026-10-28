@@ -1,0 +1,6 @@
+case_id,expected_anomaly,expected_decision,reason,ordered_quantity,shipments,actual_shipped_total,reported_shipped_rollup
+ANOM-001,True,REJECT_PROMISE,Promised delivery starts before the order was placed.,,,,
+ANOM-002,True,REJECT_ALLOCATION,Allocated quantity exceeds available inventory.,,,,
+ANOM-003,True,REJECT_CARRIER,The selected carrier and service level do not support the destination zone.,,,,
+ANOM-004,True,FLAG_INVALID_LIFECYCLE,The delivery timestamp occurs before dispatch.,,,,
+ANOM-005,True,FLAG_ROLLUP_MISMATCH,"The reported shipment rollup is 12, but the sum of the two shipment quantities is 10.",10,"[{'shipment_id': 'SHP-ANOM-005-01', 'shipped_quantity': 6}, {'shipment_id': 'SHP-ANOM-005-02', 'shipped_quantity': 4}]",10,12

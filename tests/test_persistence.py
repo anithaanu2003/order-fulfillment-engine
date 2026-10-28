@@ -78,7 +78,7 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
     database_file = tmp_path / "test_fulfillment.db"
     create_test_database(database_file, monkeypatch)
 
-    # Insert the master data and order records needed for this test.
+    # Insert required master data in foreign-key dependency order.
     with sqlite3.connect(database_file) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
@@ -99,33 +99,6 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             VALUES (
                 'FUL-2026-000001', 'Hyderabad Warehouse',
                 'Hyderabad', 'SOUTH', 1
-            )
-            """
-        )
-
-        connection.execute(
-            """
-            INSERT INTO inventory (
-                inventory_id, node_id, sku_id,
-                available_quantity, reserved_quantity, updated_at
-            )
-            VALUES (
-                'INV-000001', 'FUL-2026-000001', 'SKU-000001',
-                10, 0, '2026-10-26T12:00:00'
-            )
-            """
-        )
-
-        connection.execute(
-            """
-            INSERT INTO warehouse_capacity (
-                capacity_id, node_id, capacity_date,
-                max_order_lines, used_order_lines,
-                max_units, used_units
-            )
-            VALUES (
-                'CAP-000001', 'FUL-2026-000001', '2026-10-26',
-                100, 0, 500, 0
             )
             """
         )
@@ -155,6 +128,46 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             )
             VALUES (
                 'CSZ-000001', 'CAR-000001', 'SVC-000002', 'SOUTH', 1
+            )
+            """
+        )
+
+        # The carrier must exist before its calendar record is inserted.
+        connection.execute(
+            """
+            INSERT INTO carrier_calendars (
+                carrier_calendar_id, carrier_id, calendar_date,
+                is_operating, cutoff_time, notes
+            )
+            VALUES (
+                'CAL-000001', 'CAR-000001', '2026-10-26',
+                1, '14:00', 'Test operating day'
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO inventory (
+                inventory_id, node_id, sku_id,
+                available_quantity, reserved_quantity, updated_at
+            )
+            VALUES (
+                'INV-000001', 'FUL-2026-000001', 'SKU-000001',
+                10, 0, '2026-10-26T12:00:00'
+            )
+            """
+        )
+
+        connection.execute(
+            """
+            INSERT INTO warehouse_capacity (
+                capacity_id, node_id, capacity_date,
+                max_order_lines, used_order_lines, max_units, used_units
+            )
+            VALUES (
+                'CAP-000001', 'FUL-2026-000001', '2026-10-26',
+                100, 0, 500, 0
             )
             """
         )
@@ -207,10 +220,9 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
     ]
 
     result = persist_order_allocation(order, allocations)
-
     assert result is True
 
-    # Read the saved results from the database.
+    # Verify the persisted results.
     with sqlite3.connect(database_file) as connection:
         status = connection.execute(
             "SELECT order_status FROM orders WHERE order_id = ?",
@@ -221,6 +233,7 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             "SELECT COUNT(*) FROM shipments WHERE order_id = ?",
             ("ORD-2026-000001",),
         ).fetchone()[0]
+
         tracking_event_count = connection.execute(
             """
             SELECT COUNT(*)
@@ -233,14 +246,12 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             """,
             ("ORD-2026-000001",),
         ).fetchone()[0]
+
         tracking_event = connection.execute(
             """
             SELECT
-                tracking_event_id,
-                event_sequence,
-                event_type,
-                event_timestamp,
-                event_location
+                tracking_event_id, event_sequence, event_type,
+                event_timestamp, event_location
             FROM tracking_events
             WHERE shipment_id IN (
                 SELECT shipment_id
@@ -274,7 +285,6 @@ def test_new_order_is_persisted_successfully(tmp_path, monkeypatch):
             """
         ).fetchone()
 
-    # Verify that all expected changes were saved.
     assert status == "ALLOCATED"
     assert shipment_count == 1
     assert tracking_event_count == 1

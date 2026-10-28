@@ -1,0 +1,32 @@
+{
+  "database": "final_assessment_v2.db",
+  "fixed_seed": 20261022,
+  "row_counts": {
+    "carrier_calendars": 1510,
+    "carrier_scans": 36374,
+    "carrier_service_zones": 60,
+    "carriers": 10,
+    "delivery_promises": 20000,
+    "fulfillment_nodes": 20,
+    "holidays": 13,
+    "inventory": 100,
+    "order_lines": 100104,
+    "orders": 50000,
+    "service_levels": 3,
+    "shipment_lines": 39818,
+    "shipments": 36374,
+    "skus": 5,
+    "tracking_events": 174607,
+    "warehouse_capacity": 3020
+  },
+  "total_rows": 462018,
+  "foreign_key_violations": 0,
+  "shipment_status_latest_event_mismatches": 0,
+  "automated_tests": "155 passed; 5 subtests passed",
+  "export_verification": "PASSED: 16 tables, 32 CSV/JSON files; checksums and row counts match",
+  "anomaly_validation": "PASSED: 5 scenarios and 5 ground-truth labels",
+  "notes": [
+    "Synthetic assessment data; not production data.",
+    "The operational database was opened read-only."
+  ]
+}

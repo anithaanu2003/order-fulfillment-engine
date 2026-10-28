@@ -17,4 +17,28 @@ data/*.sqlite3
 .env.*
 
 # IDE
+.vscode/# Local databases
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Temporary reproducibility runs
+temp/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets and editor settings
+.env
+.env.*
 .vscode/
+
+# Duplicate JSON exports (CSV is the committed tabular format)
+
+# Exclude outdated export and temporary test runs
+exports/final_assessment_v2/
+temp/

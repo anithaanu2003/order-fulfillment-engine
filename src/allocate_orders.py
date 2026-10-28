@@ -128,6 +128,7 @@ def record_capacity_usage(
 
     return True
 
+
 def find_eligible_fulfillment_node(
     inventory_records,
     capacity_records,
@@ -137,13 +138,22 @@ def find_eligible_fulfillment_node(
 ):
     """
     Select an eligible warehouse with the least excess stock.
-    The warehouse must have sufficient inventory and capacity.
+
+    A node must have:
+    1. Sufficient unreserved stock for the requested SKU.
+    2. Sufficient capacity for the requested lines and units.
     """
     if requested_quantity <= 0:
         raise ValueError("Requested quantity must be greater than zero.")
 
     if requested_order_lines <= 0:
         raise ValueError("Requested order lines must be greater than zero.")
+
+    # Each node should have one capacity record for the selected date.
+    capacity_by_node = {
+        record["node_id"]: record
+        for record in capacity_records
+    }
 
     best_node = None
     smallest_excess = None
@@ -152,32 +162,36 @@ def find_eligible_fulfillment_node(
         if inventory["sku_id"] != sku_id:
             continue
 
-        if not can_fulfill_order_line(inventory, requested_quantity):
+        if not can_fulfill_order_line(
+            inventory,
+            requested_quantity,
+        ):
             continue
 
         node_id = inventory["node_id"]
+        capacity = capacity_by_node.get(node_id)
 
-        for capacity in capacity_records:
-            if capacity["node_id"] != node_id:
-                continue
+        # The node must have a capacity record for this date.
+        if capacity is None:
+            continue
 
-            if not can_accept_order(
-                capacity,
-                requested_order_lines,
-                requested_quantity,
-            ):
-                continue
+        if not can_accept_order(
+            capacity,
+            requested_order_lines,
+            requested_quantity,
+        ):
+            continue
 
-            unreserved_quantity = get_unreserved_quantity(inventory)
-            excess = unreserved_quantity - requested_quantity
+        unreserved_quantity = get_unreserved_quantity(inventory)
+        excess = unreserved_quantity - requested_quantity
 
-            if smallest_excess is None or excess < smallest_excess:
-                smallest_excess = excess
-                best_node = node_id
-
-            break
+        # Prefer the node with the least excess stock.
+        if smallest_excess is None or excess < smallest_excess:
+            smallest_excess = excess
+            best_node = node_id
 
     return best_node
+
 
 
 def allocate_order_line(
@@ -226,13 +240,35 @@ def allocate_order_line(
 
     return node_id
 
-def allocate_order(inventory_records, capacity_records, order_lines):
+def allocate_order(
+    inventory_records,
+    capacity_records,
+    order_lines,
+    return_failure_reason=False,
+):
     """
     Allocate every line in an order.
-    If any line fails, restore inventory and capacity to their original state.
+
+    If any line fails, restore all in-memory inventory and
+    capacity changes made while processing this order.
+
+    By default, preserve the existing return behavior:
+        success -> allocations list
+        failure -> None
+
+    When return_failure_reason=True:
+        success -> (allocations, None)
+        failure -> (None, reason)
     """
+    def result_with_reason(allocations, reason=None):
+        if return_failure_reason:
+            return allocations, reason
+        return allocations
+
     if not validate_order_lines(order_lines):
-        return None
+        reason = "INVALID_ORDER_LINES"
+        print(f"ALLOCATION DEBUG: {reason}")
+        return result_with_reason(None, reason)
 
     inventory_snapshot = [
         record.copy() for record in inventory_records
@@ -244,32 +280,97 @@ def allocate_order(inventory_records, capacity_records, order_lines):
     allocations = []
 
     for line in order_lines:
+        sku_id = line["sku_id"]
+        quantity = line["quantity"]
+
         node_id = allocate_order_line(
             inventory_records,
             capacity_records,
-            line["sku_id"],
-            line["quantity"],
+            sku_id,
+            quantity,
         )
 
         if node_id is None:
-            for index, snapshot in enumerate(inventory_snapshot):
-                inventory_records[index].clear()
-                inventory_records[index].update(snapshot)
+            # Diagnose the failed SKU using the state before
+            # this order began.
+            matching_inventory = [
+                record
+                for record in inventory_snapshot
+                if record["sku_id"] == sku_id
+            ]
 
-            for index, snapshot in enumerate(capacity_snapshot):
-                capacity_records[index].clear()
-                capacity_records[index].update(snapshot)
+            total_unreserved = sum(
+                get_unreserved_quantity(record)
+                for record in matching_inventory
+            )
 
-            return None
+            stock_eligible_nodes = {
+                record["node_id"]
+                for record in matching_inventory
+                if can_fulfill_order_line(record, quantity)
+            }
+
+            # Capacity reflects any earlier lines allocated
+            # during this order.
+            capacity_eligible_nodes = {
+                record["node_id"]
+                for record in capacity_records
+                if can_accept_order(record, 1, quantity)
+            }
+
+            eligible_nodes = (
+                stock_eligible_nodes & capacity_eligible_nodes
+            )
+
+            if (
+                not matching_inventory
+                or total_unreserved < quantity
+            ):
+                reason = "INSUFFICIENT_TOTAL_STOCK"
+            elif not stock_eligible_nodes:
+                reason = "NO_NODE_HAS_ENOUGH_SKU_STOCK"
+            elif not eligible_nodes:
+                reason = "NO_STOCKED_NODE_HAS_CAPACITY"
+            else:
+                reason = "ALLOCATION_SELECTION_FAILED"
+
+            print(
+                f"ALLOCATION DEBUG: {reason}; "
+                f"sku={sku_id}; quantity={quantity}; "
+                f"total_unreserved={total_unreserved}; "
+                f"stock_nodes={len(stock_eligible_nodes)}; "
+                f"capacity_nodes={len(capacity_eligible_nodes)}; "
+                f"eligible_nodes={len(eligible_nodes)}"
+            )
+
+            # Roll back all inventory changes made for this order.
+            for record, snapshot in zip(
+                inventory_records,
+                inventory_snapshot,
+            ):
+                record.clear()
+                record.update(snapshot)
+
+            # Roll back all capacity changes made for this order.
+            for record, snapshot in zip(
+                capacity_records,
+                capacity_snapshot,
+            ):
+                record.clear()
+                record.update(snapshot)
+
+            return result_with_reason(None, reason)
 
         allocations.append({
             "order_line_id": line["order_line_id"],
-            "sku_id": line["sku_id"],
-            "quantity": line["quantity"],
+            "sku_id": sku_id,
+            "quantity": quantity,
             "node_id": node_id,
         })
 
-    return allocations
+    return result_with_reason(allocations)
+
+
 
 
     

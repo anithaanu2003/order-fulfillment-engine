@@ -1,12 +1,33 @@
 
 import sqlite3
+from pathlib import Path
 
 from . import init_db
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-def get_eligible_carrier_services(destination_zone):
-    """Return active carrier services that support the destination zone."""
-    with sqlite3.connect(init_db.DATABASE_FILE) as connection:
+
+def resolve_database_path(database_file=None):
+    target = (
+        Path(database_file)
+        if database_file is not None
+        else init_db.DATABASE_FILE
+    )
+
+    if not target.is_absolute():
+        target = PROJECT_ROOT / target
+
+    if not target.exists():
+        raise FileNotFoundError(f"Database does not exist: {target}")
+
+    return target
+
+
+def get_eligible_carrier_services(destination_zone, database_file=None):
+    """Return active carrier services supporting the destination zone."""
+    target = resolve_database_path(database_file)
+
+    with sqlite3.connect(target) as connection:
         connection.row_factory = sqlite3.Row
 
         rows = connection.execute(
@@ -37,9 +58,9 @@ def get_eligible_carrier_services(destination_zone):
     return [dict(row) for row in rows]
 
 
-def select_carrier_service(destination_zone):
+def select_carrier_service(destination_zone, database_file=None):
     """Choose the fastest eligible service, breaking ties by carrier name."""
-    options = get_eligible_carrier_services(destination_zone)
+    options = get_eligible_carrier_services(destination_zone, database_file)
 
     if not options:
         return None

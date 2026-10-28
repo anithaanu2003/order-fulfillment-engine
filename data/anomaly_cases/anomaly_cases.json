@@ -1,0 +1,154 @@
+{
+  "seed": 20261022,
+  "database_modified": false,
+  "description": "Isolated synthetic anomaly examples. These scenarios are not inserted into the operational database.",
+  "scenario_inputs": [
+    {
+      "case_id": "ANOM-001",
+      "anomaly_type": "PROMISE_BEFORE_ORDER",
+      "order_timestamp": "2026-10-22T10:00:00",
+      "promise_created_at": "2026-10-22T10:05:00",
+      "promised_delivery_start": "2026-10-21T00:00:00",
+      "promised_delivery_end": "2026-10-23T23:59:59",
+      "allocated_quantity": "",
+      "available_quantity": "",
+      "carrier_id": "",
+      "service_level_id": "",
+      "destination_zone": "",
+      "supported_zone": "",
+      "created_at": "",
+      "dispatched_at": "",
+      "delivered_at": "",
+      "ordered_quantity": "",
+      "shipped_quantity": "",
+      "reported_rollup_quantity": ""
+    },
+    {
+      "case_id": "ANOM-002",
+      "anomaly_type": "ALLOCATION_EXCEEDS_INVENTORY",
+      "order_timestamp": "2026-10-22T10:00:00",
+      "promise_created_at": "",
+      "promised_delivery_start": "",
+      "promised_delivery_end": "",
+      "allocated_quantity": 8,
+      "available_quantity": 5,
+      "carrier_id": "",
+      "service_level_id": "",
+      "destination_zone": "",
+      "supported_zone": "",
+      "created_at": "",
+      "dispatched_at": "",
+      "delivered_at": "",
+      "ordered_quantity": 8,
+      "shipped_quantity": 8,
+      "reported_rollup_quantity": ""
+    },
+    {
+      "case_id": "ANOM-003",
+      "anomaly_type": "CARRIER_UNSUPPORTED_FOR_ZONE",
+      "order_timestamp": "2026-10-22T10:00:00",
+      "promise_created_at": "",
+      "promised_delivery_start": "",
+      "promised_delivery_end": "",
+      "allocated_quantity": "",
+      "available_quantity": "",
+      "carrier_id": "CAR-000001",
+      "service_level_id": "SVC-000001",
+      "destination_zone": "CENTRAL",
+      "supported_zone": "NORTH",
+      "created_at": "",
+      "dispatched_at": "",
+      "delivered_at": "",
+      "ordered_quantity": "",
+      "shipped_quantity": "",
+      "reported_rollup_quantity": ""
+    },
+    {
+      "case_id": "ANOM-004",
+      "anomaly_type": "DELIVERED_BEFORE_DISPATCH",
+      "order_timestamp": "2026-10-22T10:00:00",
+      "promise_created_at": "",
+      "promised_delivery_start": "",
+      "promised_delivery_end": "",
+      "allocated_quantity": "",
+      "available_quantity": "",
+      "carrier_id": "",
+      "service_level_id": "",
+      "destination_zone": "",
+      "supported_zone": "",
+      "created_at": "2026-10-22T11:00:00",
+      "dispatched_at": "2026-10-23T09:00:00",
+      "delivered_at": "2026-10-22T18:00:00",
+      "ordered_quantity": "",
+      "shipped_quantity": "",
+      "reported_rollup_quantity": ""
+    },
+    {
+      "case_id": "ANOM-005",
+      "anomaly_type": "SPLIT_SHIPMENT_ROLLUP_INCORRECT",
+      "order_timestamp": "2026-10-22T10:00:00",
+      "promise_created_at": "",
+      "promised_delivery_start": "",
+      "promised_delivery_end": "",
+      "allocated_quantity": "",
+      "available_quantity": "",
+      "carrier_id": "",
+      "service_level_id": "",
+      "destination_zone": "",
+      "supported_zone": "",
+      "created_at": "",
+      "dispatched_at": "",
+      "delivered_at": "",
+      "ordered_quantity": 10,
+      "shipment_1_quantity": 6,
+      "shipment_2_quantity": 4,
+      "shipped_quantity": 10,
+      "reported_rollup_quantity": 12
+    }
+  ],
+  "ground_truth": [
+    {
+      "case_id": "ANOM-001",
+      "expected_anomaly": true,
+      "expected_decision": "REJECT_PROMISE",
+      "reason": "Promised delivery starts before the order was placed."
+    },
+    {
+      "case_id": "ANOM-002",
+      "expected_anomaly": true,
+      "expected_decision": "REJECT_ALLOCATION",
+      "reason": "Allocated quantity exceeds available inventory."
+    },
+    {
+      "case_id": "ANOM-003",
+      "expected_anomaly": true,
+      "expected_decision": "REJECT_CARRIER",
+      "reason": "The selected carrier and service level do not support the destination zone."
+    },
+    {
+      "case_id": "ANOM-004",
+      "expected_anomaly": true,
+      "expected_decision": "FLAG_INVALID_LIFECYCLE",
+      "reason": "The delivery timestamp occurs before dispatch."
+    },
+    {
+      "case_id": "ANOM-005",
+      "expected_anomaly": true,
+      "expected_decision": "FLAG_ROLLUP_MISMATCH",
+      "ordered_quantity": 10,
+      "shipments": [
+        {
+          "shipment_id": "SHP-ANOM-005-01",
+          "shipped_quantity": 6
+        },
+        {
+          "shipment_id": "SHP-ANOM-005-02",
+          "shipped_quantity": 4
+        }
+      ],
+      "actual_shipped_total": 10,
+      "reported_shipped_rollup": 12,
+      "reason": "The reported shipment rollup is 12, but the sum of the two shipment quantities is 10."
+    }
+  ]
+}

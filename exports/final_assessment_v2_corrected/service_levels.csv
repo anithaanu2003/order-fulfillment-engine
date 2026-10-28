@@ -1,0 +1,4 @@
+service_level_id,service_name,transit_days,cutoff_time,is_active
+SVC-000001,STANDARD,3,17:00,1
+SVC-000002,EXPRESS,1,14:00,1
+SVC-000003,ECONOMY,5,18:00,1

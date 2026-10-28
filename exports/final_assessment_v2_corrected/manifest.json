@@ -1,0 +1,181 @@
+{
+  "format_version": 1,
+  "tables": {
+    "carrier_calendars": {
+      "csv": {
+        "file": "carrier_calendars.csv",
+        "sha256": "ed487c6dc3f9a254925322aada332d584570882335b2ff21670e84ffb9598be7"
+      },
+      "json": {
+        "file": "carrier_calendars.json",
+        "sha256": "faa7c3bbe1b796d65102255a8699ed214c4474e161b3f51e6e95d286d2d98773"
+      },
+      "rows": 1510
+    },
+    "carrier_scans": {
+      "csv": {
+        "file": "carrier_scans.csv",
+        "sha256": "571dbc886fc136877782be5d555704695ef7d9ce8b3e09b93e54bad366c8ecab"
+      },
+      "json": {
+        "file": "carrier_scans.json",
+        "sha256": "7117eaf1c8d3d0870b562161559caf51d9bccc3fbd288f14b3c829802ed9bc11"
+      },
+      "rows": 36374
+    },
+    "carrier_service_zones": {
+      "csv": {
+        "file": "carrier_service_zones.csv",
+        "sha256": "03b98c7fd87f7dab0cba6888bf7bb91546220b0a3cb9a852e48b815c83d2b947"
+      },
+      "json": {
+        "file": "carrier_service_zones.json",
+        "sha256": "e1c1cdb7cba16231bfff1ab854a1acfefe304eb11d616c4d44f545fd0c92f1b5"
+      },
+      "rows": 60
+    },
+    "carriers": {
+      "csv": {
+        "file": "carriers.csv",
+        "sha256": "cb4ecae5bab76236cd495f9fed0acf096a03607772dbad3ea9264236613ccfe0"
+      },
+      "json": {
+        "file": "carriers.json",
+        "sha256": "1069a971b9bd15541590c5159662caa7f112b8912f183decae5bfb1fb23d446d"
+      },
+      "rows": 10
+    },
+    "delivery_promises": {
+      "csv": {
+        "file": "delivery_promises.csv",
+        "sha256": "2602001030385fe8b7ccbcb130fe7e0050ff3ce6508ae87a0716fa5a6ac5dfb9"
+      },
+      "json": {
+        "file": "delivery_promises.json",
+        "sha256": "644922b15a2422f0441ac75d8fb9a83419b6b4c9af81c94c52d4c29e027d454f"
+      },
+      "rows": 20000
+    },
+    "fulfillment_nodes": {
+      "csv": {
+        "file": "fulfillment_nodes.csv",
+        "sha256": "5bc1f1820a9be259370efc848e02d353506c4f11b0b42904322f5d13820e3a30"
+      },
+      "json": {
+        "file": "fulfillment_nodes.json",
+        "sha256": "95ad0848cc4cdbc6d961e4fd3bde78afee943ebc88b90fb257bb3e1a5f03962d"
+      },
+      "rows": 20
+    },
+    "holidays": {
+      "csv": {
+        "file": "holidays.csv",
+        "sha256": "a6f3de59cfe579fcbb20c8e629474a8bcbbdfa8a87e7a7a47267aa159284fd56"
+      },
+      "json": {
+        "file": "holidays.json",
+        "sha256": "1c9a7a7f251856684042ce5875424eaf729299672eb9dfe5b0905bdea1fabbca"
+      },
+      "rows": 13
+    },
+    "inventory": {
+      "csv": {
+        "file": "inventory.csv",
+        "sha256": "e09d6d8a5757a61be7479e32f35cc3de5ba1b83fb17a6c299d24fad840f99254"
+      },
+      "json": {
+        "file": "inventory.json",
+        "sha256": "6d317e283425a3db4a4d8988dcb5742b49ec0692169554844c758c5c63230a4f"
+      },
+      "rows": 100
+    },
+    "order_lines": {
+      "csv": {
+        "file": "order_lines.csv",
+        "sha256": "fbc887a2842cd15c9d4b613aa89abf151f3bf3d46b085dc79416aa03e30f4be0"
+      },
+      "json": {
+        "file": "order_lines.json",
+        "sha256": "6f771588c00dfb831ebb215bd7ac31387806895128cf6a80ac6a7c5695e7ee7a"
+      },
+      "rows": 100104
+    },
+    "orders": {
+      "csv": {
+        "file": "orders.csv",
+        "sha256": "bef94bf5bfc57a58405268e67e467e1793a8e3866765e5d22d3beb00403d0fdc"
+      },
+      "json": {
+        "file": "orders.json",
+        "sha256": "efe13dee09e8829279b70a75420023b25fa05576ab0fc5dde684b3a0abf5f285"
+      },
+      "rows": 50000
+    },
+    "service_levels": {
+      "csv": {
+        "file": "service_levels.csv",
+        "sha256": "12d0f6100ebc96db98486f5dacc2d7b1413753009ae2c74dc5af6cf7c989138c"
+      },
+      "json": {
+        "file": "service_levels.json",
+        "sha256": "d5749d1c3dc178149d38000b8e3de9b0ca3229829251cd9b77a24a92fa40753e"
+      },
+      "rows": 3
+    },
+    "shipment_lines": {
+      "csv": {
+        "file": "shipment_lines.csv",
+        "sha256": "afd75e8f2c9dc85ca002350bb94b9e81e47060447dc956392b787dc2a2751ce5"
+      },
+      "json": {
+        "file": "shipment_lines.json",
+        "sha256": "e2dbb6117b45556126efa85d0fabaa740ee054a25d89073eff7bc24c54cff55f"
+      },
+      "rows": 39818
+    },
+    "shipments": {
+      "csv": {
+        "file": "shipments.csv",
+        "sha256": "23b2b1c5539fcfb22adfa8b26f1e9131486dcf7cee7229412164f2b7635577c2"
+      },
+      "json": {
+        "file": "shipments.json",
+        "sha256": "122e2fedbe58c8caffb2501841830dd2810ace938215bb8f1720df476c2c4030"
+      },
+      "rows": 36374
+    },
+    "skus": {
+      "csv": {
+        "file": "skus.csv",
+        "sha256": "342c4e4b7210d60fad81f6f8f6de4023d412b121b55be66410f7738f91194d21"
+      },
+      "json": {
+        "file": "skus.json",
+        "sha256": "30982d790edba3343bca041cc8fb385bb84c64f57f223b37f5c30bfa0a81c52e"
+      },
+      "rows": 5
+    },
+    "tracking_events": {
+      "csv": {
+        "file": "tracking_events.csv",
+        "sha256": "e8df8f21ab282bb1373a3c4318df0ddf13dcefdbdaf26ca235b2df3b300701b0"
+      },
+      "json": {
+        "file": "tracking_events.json",
+        "sha256": "7c2a819e8ed07934ca15a81fd9b01c694a69c9577d4af2787a4b5bddd05e3c91"
+      },
+      "rows": 174607
+    },
+    "warehouse_capacity": {
+      "csv": {
+        "file": "warehouse_capacity.csv",
+        "sha256": "7f67363c89e4012eb6f427e6c70e76c6045317c4176537eb4f6ab67349ab8bc3"
+      },
+      "json": {
+        "file": "warehouse_capacity.json",
+        "sha256": "a0af309d64f7315f124df914a8e18e543f66ae4e93b637c80e9ce563de417606"
+      },
+      "rows": 3020
+    }
+  }
+}

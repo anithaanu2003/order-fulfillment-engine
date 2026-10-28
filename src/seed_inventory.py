@@ -46,8 +46,23 @@ def generate_inventory_records(nodes, skus):
     return inventory_records
 
 
-def seed_inventory():
-    with sqlite3.connect(DATABASE_FILE) as connection:
+def seed_inventory(database_file=None):
+    target_database = (
+        Path(database_file)
+        if database_file is not None
+        else DATABASE_FILE
+    )
+
+    if not target_database.is_absolute():
+        target_database = PROJECT_ROOT / target_database
+
+    if not target_database.is_file():
+        raise FileNotFoundError(
+            f"Database not found: {target_database}. "
+            "Initialize the database and seed master data first."
+        )
+
+    with sqlite3.connect(target_database) as connection:
         connection.execute("PRAGMA foreign_keys = ON")
 
         nodes = connection.execute(
@@ -91,6 +106,7 @@ def seed_inventory():
             "SELECT COUNT(DISTINCT node_id) FROM inventory"
         ).fetchone()[0]
 
+        print(f"Database: {target_database}")
         print(f"Inventory records in database: {total}")
         print(f"Warehouses represented: {node_count}")
         print(f"Records generated this run: {len(inventory_records)}")

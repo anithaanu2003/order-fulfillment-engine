@@ -1,0 +1,6 @@
+sku_id,sku_name,category,unit_weight_kg,is_active
+SKU-000001,Laptop,Electronics,1.8,1
+SKU-000002,Wireless Mouse,Accessories,0.15,1
+SKU-000003,Keyboard,Accessories,0.7,1
+SKU-000004,Monitor,Electronics,4.5,1
+SKU-000005,Headphones,Audio,0.3,1
